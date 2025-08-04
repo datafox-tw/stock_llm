@@ -1,0 +1,9 @@
+pdf2docx
+numpy
+pandas
+fastapi
+uvicorn[standard]
+python-docx
+python-multipart
+google-cloud-storage
+google

@@ -1,0 +1,13 @@
+.venv
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.db
+*.sqlite3
+.env
+.idea/
+.vscode/
+.DS_Store
+assets/demo_pdf.pdf

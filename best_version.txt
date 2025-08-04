@@ -1,0 +1,6 @@
+gcloud builds submit --tag gcr.io/stock-analysis-llm/stock-llm
+gcloud run deploy stock-llm \
+  --image gcr.io/stock-analysis-llm/stock-llm \
+  --platform managed \
+  --region asia-east1 \
+  --allow-unauthenticated

@@ -64,7 +64,7 @@ def html_preprocessing(pdf_path, html_content,chunk_size,chunk_overlap):
                 result[current_html] = current_range
         return result
     def create_chunks(text, chunk_size=chunk_size, overlap=chunk_overlap):
-        chunks_dict = dict()
+        chunks_dict = {}
         start = 0
         while True:
             if start+ chunk_size < len(text):
@@ -103,8 +103,10 @@ def html_preprocessing(pdf_path, html_content,chunk_size,chunk_overlap):
     tables = extract_tables(html_content)
     print(f"Extracted {len(tables)} tables from HTML")
 
+    save_plain_text(plain_text, "plain_text.txt")
+
     start_point = 0
-    html_loc_dict = dict()
+    html_loc_dict = {}
     for table in tables:
         table_texts = BeautifulSoup(table, 'html.parser').get_text()
         if table_texts != "":
@@ -114,7 +116,7 @@ def html_preprocessing(pdf_path, html_content,chunk_size,chunk_overlap):
             html_loc_dict[table] = result
 
     html_loc_dict = remove_overlapping_ranges(html_loc_dict)
-    print(f"Remove overlapping ranges")
+    print("Remove overlapping ranges")
     #往前和往後多抓100字元
     for table in html_loc_dict:
         original_loc = html_loc_dict[table]
@@ -122,17 +124,16 @@ def html_preprocessing(pdf_path, html_content,chunk_size,chunk_overlap):
         new_end = min(original_loc[1]+100, len(plain_text))
         html_loc_dict[table] = (new_start, new_end)
 
-    num_htmlloc_dict = dict()
     num_htmlloc_dict = {i:loc for i, loc in enumerate(html_loc_dict.values())}
-    print(f"All accessible table has been linked with start and end point")
+    print("All accessible table has been linked with start and end point")
     
     chunk_loc_dict = create_chunks(plain_text, chunk_size=400, overlap=250)
-    print(f"chunks created")
+    print("chunks created")
 
     
     result_docs = []
     for chunk in chunk_loc_dict:
-        mt = dict()
+        mt = {}
         chunk_loc = chunk_loc_dict[chunk]
         data_tables = []
         should_end = 0
@@ -146,7 +147,7 @@ def html_preprocessing(pdf_path, html_content,chunk_size,chunk_overlap):
                 should_end = index
             if index == should_end+3:
                 break
-        start_search = min(data_tables)
+        start_search = min(data_tables) if data_tables else 0
         mt["tables"] = data_tables
         mt["locs"] = chunk_loc
         mt["source"] = pdf_path
@@ -155,11 +156,18 @@ def html_preprocessing(pdf_path, html_content,chunk_size,chunk_overlap):
         # mt["page"] = dict_content["start_page"]
     print("End of preprocessing")
     num_html_dict = {num_htmlloc_dict[loc]: html_loc_dict[loc] for loc in num_htmlloc_dict}
-        
-        
-        
-        
-        
+
     return result_docs, num_html_dict
 
+with open("asset/test/測試複雜表格.html", "rb") as f:
+    html_content = f.read().decode('utf-8')
+docs, num_html_dict = html_preprocessing("example.pdf", html_content, chunk_size=400, chunk_overlap=250)
 
+with open("output.txt", "w", encoding="utf-8") as f:
+    for doc in docs:
+        f.write(doc.page_content + "\n\n")
+        f.write(f"Metadata: {doc.metadata}\n\n")
+
+with open("num_html_dict.txt", "w", encoding="utf-8") as f:
+    for key, value in num_html_dict.items():
+        f.write(f"{key}: {value}\n")
